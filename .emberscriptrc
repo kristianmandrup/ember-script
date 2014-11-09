@@ -1,0 +1,16 @@
+{
+  "defaultLang": "coffee",
+  "fragments": {
+    "default": [
+      "`import Ember from 'ember'`"
+    ],
+    "model": [
+      "`import DS from 'ember-data'`",
+      "Model = DS.Model",
+      "attr = DS.attr",
+      "hasMany = DS.hasMany",
+      "belongsTo = DS.belongsTo",
+      "computed = Ember.computed"
+    ]
+  }
+}

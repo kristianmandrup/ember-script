@@ -1,33 +1,58 @@
+fs = require 'fs'
+
+emptyConfig = {fragments: {}}
+
+parseConfig = ->
+  try
+    return emptyConfig unless fs.existsSync '.emberscriptrc'
+
+    json = fs.readFileSync '.emberscriptrc', 'utf8'
+    JSON.parse json
+  catch e
+    console.error e
+    emptyConfig
+
 fragmenter = (mcOptions, options) ->
   anyFragExpr = /#\s\((ember|em|coffee|cs|ecma|js|live|ls)\)\s*/
 
   createFragment = (lang, code) ->
     {type: lang, code: code}
 
+  config = parseConfig()
+
+  srcPath = options.input
+
+  config.defaultLang ||= mcOptions.lang or 'coffee'
+
   # by default starts with coffeescript
-  fragmentStack = [mcOptions.lang or 'coffee']
+  fragmentStack = [config.defaultLang]
 
   fragments = []
 
   topFragment = (code) ->
-    fragments.push(createFragment 'coffee', code)
+    fragments.push(createFragment config.defaultLang, code)
 
   topFragments = (fragments) ->
     topFragment fragments.join '\n'
 
   # customize your own initial top fragments here
-  topFragment '`import Ember from "ember"`'
+  defaultFragments = config.fragments.default or ['`import Ember from "ember"`']
+  topFragments defaultFragments
 
-  srcPath = options.input
+  defaultModelFragments = [
+    '`import DS from "ember-data"`',
+    'Model = DS.Model',
+    'attr = DS.attr',
+    'hasMany = DS.hasMany',
+    'belongsTo = DS.belongsTo',
+    "computed = Ember.computed"
+  ]
 
   # if the file is located inside app/models we assume it is a models file
   if srcPath.match /app\/models\//
-    topFragments [
-      '`import DS from "ember-data"`',
-      'attr = DS.attr',
-      'hasMany = DS.hasMany',
-      'belongsTo = DS.belongsTo'
-    ]
+    topFragments config.fragments.model or defaultModelFragments
+
+  # more topFragment customizations may follow here...
 
   return {
     fragments: fragments

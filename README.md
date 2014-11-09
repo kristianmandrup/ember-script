@@ -100,7 +100,11 @@ Valid aliases are:
 
 The first block is (by default) assumed to be *coffeescript* (unless you have a script identifier comment as the first line of code). 
 
-### Customization
+Another way to add top level code is demonsteated by @patricklx here
+
+[ember-cli fix](https://github.com/patricklx/ember-script/commit/7516a4e90481c9f4ac4dc64ec55f4ee5b4261752)
+
+ ### Customization
 
 For your own customizations, go to the end of `cli-multi-compile.coffee` and change `compilers` or `codeEmitter`. You can also send an extra `mcOptions` object as the last argument. This object can 
 take a `transformer` function (f.ex to prepend each compiled fragment with a custom comment) and a `lang` (string) argument to override `coffeescript` as the default/first fragment script language.
@@ -115,6 +119,59 @@ module.exports = (code, options) ->
   codeEmitter = options.codeEmitter || createCodeEmitter(options)
   multiCompile code, compilers, codeEmitter, mcOptions
 ```
+
+### Top fragment customization
+
+You can now also configure your topFragments and default fragment language via
+an `.emberscriptrc` file in your project root
+
+```js
+{
+  "defaultLang": "coffee",
+  "fragments": {
+    "default": [
+      "`import Ember from 'ember'`"
+    ],
+    "model": [
+      "`import DS from 'ember-data'`",
+      "Model = DS.Model",
+      "attr = DS.attr",
+      "hasMany = DS.hasMany",
+      "belongsTo = DS.belongsTo",
+      "computed = Ember.computed"
+    ]
+  }
+}
+```
+
+You can also add/edit custom top level fragments in `src/multi-compiler.coffee`
+
+```coffeescript
+# customize your own initial top fragments here
+defaultFragments = config.fragments.default or ['`import Ember from "ember"`']
+topFragments defaultFragments
+
+# if the file is located inside app/models we assume it is a models file
+if srcPath.match /app\/models\//
+  topFragments config.fragments.model or defaultModelFragments
+```
+
+Currently we always add `import Ember from "ember"` as the top fragment. Then if the file is located inside `app/models`,
+we assume it is a model file using Ember Data and import the DS namespace and setup some convenience variables.
+This allows us to write the model like this:
+
+```coffeescript
+Friends = Model.extend
+  articles:       hasMany 'articles', async: true
+  email:          attr 'string'
+  firstName:      attr 'string'
+  lastName:       attr 'string'
+  totalArticles:  attr 'number'
+  twitter:        attr 'string'
+  fullName:       Ember.computed 'firstName', 'lastName', ->
+    [@firstName, @lastName].join ' '
+```
+
 
 
 
