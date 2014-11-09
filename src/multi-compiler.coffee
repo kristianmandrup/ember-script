@@ -1,16 +1,20 @@
 fragmenter = (options) ->
-  # by default starts with js
-    
   anyFragExpr = /#\s\((ember|em|coffee|cs|ecma|js|live|ls)\)\s*/
 
   createFragment = (lang, code) ->
     {type: lang, code: code}
 
+  # by default starts with coffeescript
   fragmentStack = [options.lang or 'coffee']
 
+  fragments = []
+
+  # customize your own initial top fragments here
+  fragments.push(createFragment 'coffee', '`import Ember from "ember"`')
+
   return {
-    fragments: []
-    
+    fragments: fragments
+
     fragmentize: (code) ->
       nextFragMatch = code.match anyFragExpr
       unless nextFragMatch

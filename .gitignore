@@ -11,3 +11,4 @@ lib/bootstrap
 coffee-script-redux-*.tgz
 *.gem
 *.log
+.idea
