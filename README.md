@@ -100,11 +100,9 @@ Valid aliases are:
 
 The first block is (by default) assumed to be *coffeescript* (unless you have a script identifier comment as the first line of code). 
 
-Another way to add top level code is demonsteated by @patricklx here
+Another way to add top level code is this [ember-cli fix](https://github.com/patricklx/ember-script/commit/7516a4e90481c9f4ac4dc64ec55f4ee5b4261752) by @patricklx.
 
-[ember-cli fix](https://github.com/patricklx/ember-script/commit/7516a4e90481c9f4ac4dc64ec55f4ee5b4261752)
-
- ### Customization
+### Customization
 
 For your own customizations, go to the end of `cli-multi-compile.coffee` and change `compilers` or `codeEmitter`. You can also send an extra `mcOptions` object as the last argument. This object can 
 take a `transformer` function (f.ex to prepend each compiled fragment with a custom comment) and a `lang` (string) argument to override `coffeescript` as the default/first fragment script language.
