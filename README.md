@@ -55,6 +55,14 @@ ember-script --help
 make -j build test
 ```
 
+Run individual tests...
+
+`$bin/ember-script -j --input sandbox/test-fragmented.em`
+
+Testing model file with Ember Data extra goodies! :)
+
+`$bin/ember-script -j --input sandbox/app/models/friends.coffee`
+
 ## Script fragments and Multi compilation
 
 This branch support compilation of script fragments (multi compilation).

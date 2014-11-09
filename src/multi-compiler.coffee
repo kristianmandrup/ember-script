@@ -1,16 +1,33 @@
-fragmenter = (options) ->
+fragmenter = (mcOptions, options) ->
   anyFragExpr = /#\s\((ember|em|coffee|cs|ecma|js|live|ls)\)\s*/
 
   createFragment = (lang, code) ->
     {type: lang, code: code}
 
   # by default starts with coffeescript
-  fragmentStack = [options.lang or 'coffee']
+  fragmentStack = [mcOptions.lang or 'coffee']
 
   fragments = []
 
+  topFragment = (code) ->
+    fragments.push(createFragment 'coffee', code)
+
+  topFragments = (fragments) ->
+    topFragment fragments.join '\n'
+
   # customize your own initial top fragments here
-  fragments.push(createFragment 'coffee', '`import Ember from "ember"`')
+  topFragment '`import Ember from "ember"`'
+
+  srcPath = options.input
+
+  # if the file is located inside app/models we assume it is a models file
+  if srcPath.match /app\/models\//
+    topFragments [
+      '`import DS from "ember-data"`',
+      'attr = DS.attr',
+      'hasMany = DS.hasMany',
+      'belongsTo = DS.belongsTo'
+    ]
 
   return {
     fragments: fragments
@@ -49,9 +66,9 @@ commentTransform = (compiled, type) ->
   compileComment = "\n// compile fragment: #{type}\n"
   compileComment.concat compiled
 
-createIterator = (compilers, options) ->
+createIterator = (compilers, mcOptions) ->
 
-  transform = options.transformer or commentTransform
+  transform = mcOptions.transformer or commentTransform
 
   (fragment, cb) ->
     type = resolveCompilerAlias fragment.type
@@ -77,14 +94,14 @@ async = require 'async'
 # showCompiledCode = (compiledCode) ->
 #   console.log return compiledCode
 
-concatAll = (code, compilers, cb, options) ->
-  options = options or {}
+concatAll = (code, compilers, cb, mcOptions, options) ->
+  mcOptions = mcOptions or {}
 
-  fragger = fragmenter options
+  fragger = fragmenter mcOptions, options
   fragger.fragmentize code
   # console.log fragger
 
-  async.concat(fragger.fragments, createIterator(compilers, options), (err, results) ->
+  async.concat(fragger.fragments, createIterator(compilers, mcOptions), (err, results) ->
     return next(err)  if (err)
     cb results.join('\n')
   )

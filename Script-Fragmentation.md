@@ -67,6 +67,10 @@ Testing:
 
 `$ bin/ember-script -j --input sandbox/multicompile-code.em`
 
+Testing model file with Ember Data extra goodies! :)
+
+`$bin/ember-script -j --input sandbox/app/models/friends.coffee`
+
 For the multi-compiler, we could do sth like:
 
 ```coffeescript

@@ -43,5 +43,6 @@ module.exports = (code, options) ->
   mcOptions =
     lang: 'coffee'
 
+  # console.log 'options', options
   codeEmitter = options.codeEmitter || createCodeEmitter(options)
-  multiCompile code, compilers, codeEmitter, mcOptions
+  multiCompile code, compilers, codeEmitter, mcOptions, options
