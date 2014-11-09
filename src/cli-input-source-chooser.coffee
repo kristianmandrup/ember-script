@@ -2,8 +2,8 @@ fs = require 'fs'
 
 module.exports = {
   choose: (options) ->
-    input = ''  
-
+    input = ''
+    # console.log 'choose', options
     processInput = require './cli-process-input'
 
     if options.input?

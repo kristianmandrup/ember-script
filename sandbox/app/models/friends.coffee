@@ -1,3 +1,5 @@
+# (em)
+
 Friends = DS.Model.extend
   articles:       hasMany 'articles', async: true
   email:          attr 'string'

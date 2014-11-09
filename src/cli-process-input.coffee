@@ -17,6 +17,9 @@ selectinputSource = (options) ->
 
 module.exports = (input, options, err) ->
   throw err if err?
+
+  # console.log 'process input', options
+
   result = null
   inputName = options.input ? (options.cli and 'cli' or 'stdin')
   inputSource = selectinputSource options
@@ -60,6 +63,7 @@ module.exports = (input, options, err) ->
       raw: options.raw or options.sourceMap or options.sourceMapFile or options.eval
       inputSource: inputSource
       literate: options.literate
+      es6: options.harmony
   catch e
     console.error e.message
     process.exit 1

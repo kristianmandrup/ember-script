@@ -1,28 +1,46 @@
 EmberScript  = require './module'
-CoffeeScript = require 'coffee-script'
 
-LiveScript = require('LiveScript')
+# utility method to merge/extend two objects
+extend = exports.extend = (object, properties) ->
+  for key, val of properties
+    object[key] = val
+  object
 
 EmberScript.compileCode = (input, options) ->
+  # options['raw'] = yes
+
+  # Alternative??
+  # EmberScript.em2js input, options
+
+# IMPORTANT!! we could test for harmony option here and prepend input with import Ember ...
+#  if options.es6? or options.harmony?
+#    input = 'import Ember from "ember";\n' + input
+
+# Perhaps we need to avoid importing Ember for each ember block encountered! Should only be for first one!
+
   csAst = EmberScript.parse input, raw: yes
-  jsAst = EmberScript.compile csAst
-  EmberScript.js jsAst
+  jsAst = EmberScript.compile csAst, options
+  EmberScript.js jsAst, options
 
 compilers =
   js: (source) ->
     source
 
-  coffee: (source) ->
+  coffee: (source, options = {}) ->
+    CoffeeScript = require 'coffee-script'
     # console.log 'CoffeeScript.compile:', source
     CoffeeScript.compile source, { bare: true }
 
-  live: (source) ->
+  live: (source, options = {}) ->
+    LiveScript = require('LiveScript')
     # console.log 'LivesScript.compile:', source
     LiveScript.compile source, { bare: true }
 
-  ember: (source) ->
+  ember: (source, options = {}) ->
     # console.log 'EmberScript.compile:', source
-    EmberScript.compileCode source, {raw: yes, literate: yes}
+    opts = raw: yes, literate: yes
+    # opts = extend options, opts
+    EmberScript.compileCode source, opts
 
 # emit the code to a file or stdout
 # depending on options

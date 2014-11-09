@@ -102,6 +102,17 @@ The first block is (by default) assumed to be *coffeescript* (unless you have a 
 
 Another way to add top level code is this [ember-cli fix](https://github.com/patricklx/ember-script/commit/7516a4e90481c9f4ac4dc64ec55f4ee5b4261752) by @patricklx.
 
+```js
+  em2js: (input, options = {}) ->
+    options.optimise ?= on
+    csAST = @parse input, options
+    jsAST = @compile csAST, bare: options.bare
+    jsCode = @js jsAST, compact: options.compact or options.minify
+    if options.es6 then 'import Ember from "ember";\n' + jsCode else jsCode
+```
+
+We use this approach as well if `options.es6` is set!
+
 ### Customization
 
 For your own customizations, go to the end of `cli-multi-compile.coffee` and change `compilers` or `codeEmitter`. You can also send an extra `mcOptions` object as the last argument. This object can 

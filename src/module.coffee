@@ -33,6 +33,7 @@ CoffeeScript =
   VERSION: pkg.version
 
   parse: (coffee, options = {}) ->
+    # console.log 'parse', options
     try
       preprocessed = Preprocessor.process coffee, literate: options.literate
       parsed = Parser.parse preprocessed,
@@ -68,11 +69,16 @@ CoffeeScript =
   sourceMap: (jsAst, name, options) -> (@jsWithSourceMap jsAst, name, options).map
 
   em2js: (input, options = {}) ->
+    # console.log 'em2js', options
     options.optimise ?= on
     csAST = @parse input, options
     jsAST = @compile csAST, bare: options.bare
-    @js jsAST, compact: options.compact or options.minify
+    jsCode = @js jsAST, compact: options.compact or options.minify
 
+    if options.es6? or options.harmony?
+      'import Ember from "ember";\n' + jsCode
+    else
+      jsCode
 
 module.exports = CoffeeScript
 

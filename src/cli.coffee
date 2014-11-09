@@ -26,8 +26,9 @@ optAliases =
   p: '--parse'
   v: '--version'
   w: '--watch'
+  h: '--harmony'
 
-option 'parse', 'compile', 'optimise', 'debug', 'literate', 'raw', 'version', 'help'
+option 'parse', 'compile', 'optimise', 'debug', 'literate', 'raw', 'version', 'help', 'harmony'
 parameter 'cli', 'input', 'nodejs', 'output', 'watch'
 
 if escodegen?
@@ -76,7 +77,7 @@ require './cli-help' if options.help
 
 if options.version
   pkg = require './../package.json'
-  console.log "CoffeeScript version #{pkg.version}"
+  # console.log "CoffeeScript version #{pkg.version}"
 
 else if options.repl
   CoffeeScript.register()

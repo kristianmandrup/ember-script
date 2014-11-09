@@ -30,14 +30,16 @@ fragmenter = (mcOptions, options) ->
   fragments = []
 
   topFragment = (code) ->
+    return unless code
     fragments.push(createFragment config.defaultLang, code)
 
   topFragments = (fragments) ->
-    topFragment fragments.join '\n'
+    if typeof fragments is 'object' and fragments.length
+      topFragment fragments.join '\n'
 
   # customize your own initial top fragments here
   defaultFragments = config.fragments.default or ['`import Ember from "ember"`']
-  topFragments defaultFragments
+  topFragments defaultFragments if defaultFragments
 
   defaultModelFragments = [
     '`import DS from "ember-data"`',
@@ -79,19 +81,19 @@ fragmenter = (mcOptions, options) ->
     }
 
 compilerAliases =
-  cs: 'coffee'
-  em: 'ember'
-  ecma: 'js'
-  ls: 'live'
+  cs:     'coffee'
+  em:     'ember'
+  ecma:   'js'
+  ls:     'live'
 
 resolveCompilerAlias = (alias) ->
   compilerAliases[alias] or alias
 
 commentTransform = (compiled, type) ->
-  compileComment = "\n// compile fragment: #{type}\n"
+  compileComment = "\n// fragment: #{type}\n"
   compileComment.concat compiled
 
-createIterator = (compilers, mcOptions) ->
+createIterator = (compilers, mcOptions, options) ->
 
   transform = mcOptions.transformer or commentTransform
 
@@ -99,9 +101,11 @@ createIterator = (compilers, mcOptions) ->
     type = resolveCompilerAlias fragment.type
     code = fragment.code
 
-    compiled = transform compilers[type](code), type
-    
-    cb null, compiled
+    if !!code
+      compiled = transform compilers[type](code, options), type
+      cb null, compiled
+    else
+      cb null, code
 
 async = require 'async'
 
@@ -126,7 +130,7 @@ concatAll = (code, compilers, cb, mcOptions, options) ->
   fragger.fragmentize code
   # console.log fragger
 
-  async.concat(fragger.fragments, createIterator(compilers, mcOptions), (err, results) ->
+  async.concat(fragger.fragments, createIterator(compilers, mcOptions, options), (err, results) ->
     return next(err)  if (err)
     cb results.join('\n')
   )

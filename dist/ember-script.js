@@ -224,7 +224,7 @@
         return this.jsWithSourceMap(jsAst, name, options).map;
       },
       em2js: function (input, options) {
-        var csAST, jsAST;
+        var csAST, jsAST, jsCode;
         if (null == options)
           options = {};
         if (null != options.optimise)
@@ -233,7 +233,12 @@
           options.optimise = true;
         csAST = this.parse(input, options);
         jsAST = this.compile(csAST, { bare: options.bare });
-        return this.js(jsAST, { compact: options.compact || options.minify });
+        jsCode = this.js(jsAST, { compact: options.compact || options.minify });
+        if (null != options.es6 || null != options.harmony) {
+          return 'import Ember from "ember";\n' + jsCode;
+        } else {
+          return jsCode;
+        }
       }
     };
     module.exports = CoffeeScript;
@@ -267,7 +272,7 @@
         'ember.js'
       ],
       'author': 'Gordon L. Hempton, Michael Ficarra',
-      'version': '0.0.15',
+      'version': '0.0.17',
       'main': './lib/module',
       'bin': { 'ember-script': './bin/ember-script' },
       'homepage': 'https://github.com/ghempton/ember-script',
