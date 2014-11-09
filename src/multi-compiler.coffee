@@ -1,4 +1,5 @@
 fs = require 'fs'
+util = require 'util'
 
 emptyConfig = {fragments: {}}
 
@@ -60,6 +61,10 @@ fragmenter = (mcOptions, options) ->
     fragments: fragments
 
     fragmentize: (code) ->
+      unless typeof code is 'string'
+        console.log util.inspect code
+        throw Error "Code to fragmentize must be a String, was: #{typeof code}"
+
       nextFragMatch = code.match anyFragExpr
       unless nextFragMatch
         return @fragments.push(createFragment fragmentStack.shift(), code)

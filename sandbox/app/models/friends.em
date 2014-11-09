@@ -1,6 +1,4 @@
-# (em)
-
-Friends = DS.Model.extend
+Friends = model
   articles:       hasMany 'articles', async: true
   email:          attr 'string'
   firstName:      attr 'string'

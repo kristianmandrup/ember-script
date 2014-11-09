@@ -55,13 +55,19 @@ ember-script --help
 make -j build test
 ```
 
+To simply build coffee files:
+
+`coffee --watch -o lib -c src/multi-compiler.coffee src/cli-multi-compile.coffee`
+
 Run individual tests...
 
 `$bin/ember-script -j --input sandbox/test-fragmented.em`
 
 Testing model file with Ember Data extra goodies! :)
 
-`$bin/ember-script -j --input sandbox/app/models/friends.coffee`
+`$ bin/ember-script -j --input sandbox/app/models/friends.em`
+`$ bin/ember-script -j --input sandbox/app/models/friends-adv.coffee`
+`$ bin/ember-script -j --input sandbox/app/router.em`
 
 ## Script fragments and Multi compilation
 
@@ -181,8 +187,85 @@ Friends = Model.extend
     [@firstName, @lastName].join ' '
 ```
 
+## Precompile extras
 
+As an experiment, we have now added an (optional) precompile step
 
+Precompilation currently works with>
 
+- models
+- the router
 
+### Model
 
+```coffeescript
+Friends = model
+  articles:       hasMany 'articles', async: true
+  twitter:        belongsTo 'twit'
+
+  email:          $string
+  firstName:      $string
+  lastName:       $string
+  totalArticles:  $number
+
+  fullName:       computed 'firstName', 'lastName', ->
+    [@firstName, @lastName].join ' '
+```
+
+Precompiled and then compiled into:
+
+```js
+Friends = Model.extend({
+  articles: hasMany('articles', { async: true }),
+  twitter: belongsTo('twit'),
+  email: attr('string'),
+  firstName: attr('string'),
+  lastName: attr('string'),
+  totalArticles: attr('number'),
+```
+
+### Router
+
+```coffeescript
+Map = class router
+  $friends ->
+    _new
+    _show path: ':friend_id', ->
+      $articles ->
+        _new
+      _edit path: ':friend_id/edit'
+
+```
+
+Precompiled and then compiled into:
+
+```js
+Map = Router.map(function () {
+  this.resource('friends', function () {
+    this.route('new');
+    this.route('show', { path: ':friend_id' }, function () {
+      this.resource('articles', function () {
+        this.route('new');
+      });
+      this.route('edit', { path: ':friend_id/edit' });
+    });
+  });
+});
+```
+
+### Other extras
+
+```js
+$go 'friends.show', @
+
+person.x++
+line.y--
+```
+
+Precompiled and then compiled into:
+
+```js
+this.transitionToRoute('friends.show', this);
+person.incrementProperty('x');
+line.decrementProperty('y');
+```

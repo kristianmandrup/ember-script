@@ -1,4 +1,5 @@
 EmberScript  = require './module'
+util = require 'util'
 
 # utility method to merge/extend two objects
 extend = exports.extend = (object, properties) ->
@@ -18,9 +19,9 @@ EmberScript.compileCode = (input, options) ->
 
 # Perhaps we need to avoid importing Ember for each ember block encountered! Should only be for first one!
 
-  csAst = EmberScript.parse input, raw: yes
-  jsAst = EmberScript.compile csAst, options
-  EmberScript.js jsAst, options
+  csAst = EmberScript.parse input, raw: yes, bare: yes
+  jsAst = EmberScript.compile csAst, bare: yes #, options
+  EmberScript.js jsAst #, options
 
 compilers =
   js: (source) ->
@@ -57,10 +58,49 @@ createCodeEmitter = (options) ->
 
 multiCompile = require './multi-compiler'
 
+precompilerFor = (options) ->
+  srcPath = options.input
+  # console.log 'srcPath', srcPath, options
+  return routerPrecompiler if srcPath.match /app\/router\./
+  return modelPrecompiler if srcPath.match /app\/models\//
+  basePrecompiler
+
+basePrecompiler = (code) ->
+  code = code.replace ///\$go///gi, "@transitionToRoute"
+  code = code.replace ///(\w+)\+\+///gi, "incrementProperty '$1'"
+  code = code.replace ///(\w+)\-\-///gi, "decrementProperty '$1'"
+  code
+
+modelPrecompiler = (code) ->
+  code = basePrecompiler code
+  # class\s*
+  for type in ['string', 'number', 'boolean', 'date']
+    code = code.replace ///\$#{type}///gi, "attr '#{type}'"
+  code = code.replace ///=\s*model$///mgi, "= Model.extend"
+  code
+
+routerPrecompiler = (code) ->
+  code = basePrecompiler code
+  code = code.replace ///^(\s*)\$(\w+)///mgi, "$1@resource '$2',"
+  code = code.replace ///^(\s*)_(\w+)$///mgi, "$1@route '$2'"
+  code = code.replace ///^(\s*)_(\w+)\s*(\w+)///mgi, "$1@route '$2', $3"
+  code = code.replace ///=\s*class\s*router\s///gi, "= Router.map ->"
+  code
+
+
 module.exports = (code, options) ->
   mcOptions =
     lang: 'coffee'
 
   # console.log 'options', options
   codeEmitter = options.codeEmitter || createCodeEmitter(options)
+
+  # always insert ember script fragment identifier at the top unless first line has such a comment
+  lines = code.split '\n'
+  unless lines[0] and lines[0].match /# \(\w+\)/
+    code = "# (em)\n#{code}"
+
+  precompile = precompilerFor options
+  code = precompile code
+
   multiCompile code, compilers, codeEmitter, mcOptions, options
